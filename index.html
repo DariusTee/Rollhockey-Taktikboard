@@ -30,6 +30,9 @@ label { font-size: 10px; color: #718096; display: block; margin-bottom: 2px; }
 .legend { display: flex; flex-direction: column; gap: 3px; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #a0aec0; }
 .legend-line { width: 24px; height: 3px; border-radius: 2px; }
+  #field {
+    touch-action: none;
+}
 </style>
 </head>
 <body>
@@ -270,55 +273,13 @@ function hitPlayer(state, mx, my) {
 }
 function hitBall(state, mx, my) { return Math.hypot(state.ball.x-mx, state.ball.y-my) < 14; }
 
-canvas.addEventListener('mousedown', e => {
-  const {x,y} = getMousePos(e);
-  const st = frames[currentFrame];
-  if (tool === 'select') {
-    const p = hitPlayer(st, x, y);
-    if (p) { dragTarget={type:'player',id:p.id}; dragOffX=x-p.x; dragOffY=y-p.y; selectedId=p.id; renderPlayerBtns(); draw(st); return; }
-    if (hitBall(st, x, y)) { dragTarget={type:'ball'}; dragOffX=x-st.ball.x; dragOffY=y-st.ball.y; return; }
-    selectedId=null; draw(st);
-  }
-  if (tool === 'ball') { st.ball={x,y}; draw(st); return; }
-  if (tool === 'delete') {
-    const idx = st.arrows.findIndex(a => Math.hypot((a.x1+a.x2)/2-x,(a.y1+a.y2)/2-y) < 25);
-    if (idx>=0) { st.arrows.splice(idx,1); draw(st); }
-    return;
-  }
-  if (['run','pass','shoot'].includes(tool)) {
-    arrowStart={x,y};
-    document.getElementById('status').textContent = 'Zielpunkt klicken oder ziehen…';
-  }
-});
+canvas.addEventListener("mousedown", startDrag);
+canvas.addEventListener("mousemove", moveDrag);
+window.addEventListener("mouseup", endDrag);
 
-canvas.addEventListener('mousemove', e => {
-  const {x,y} = getMousePos(e);
-  const st = frames[currentFrame];
-  if (dragTarget) {
-    if (dragTarget.type==='player') {
-      const p = st.players.find(p=>p.id===dragTarget.id);
-      if(p){p.x=x-dragOffX;p.y=y-dragOffY;draw(st);}
-    } else { st.ball.x=x-dragOffX; st.ball.y=y-dragOffY; draw(st); }
-  }
-  if (arrowStart && ['run','pass','shoot'].includes(tool)) {
-    draw(st);
-    drawArrow(ctx, arrowStart.x, arrowStart.y, x, y, tool);
-  }
-});
-
-canvas.addEventListener('mouseup', e => {
-  const {x,y} = getMousePos(e);
-  const st = frames[currentFrame];
-  if (dragTarget) { dragTarget=null; return; }
-  if (arrowStart && ['run','pass','shoot'].includes(tool)) {
-    if (Math.hypot(x-arrowStart.x, y-arrowStart.y)>15) {
-      st.arrows.push({x1:arrowStart.x,y1:arrowStart.y,x2:x,y2:y,type:tool});
-    }
-    arrowStart=null;
-    document.getElementById('status').textContent='';
-    draw(st);
-  }
-});
+canvas.addEventListener("touchstart", startDrag, { passive: false });
+canvas.addEventListener("touchmove", moveDrag, { passive: false });
+window.addEventListener("touchend", endDrag);
 
 function renderFrameList() {
   const div = document.getElementById('frame-list');
@@ -470,6 +431,212 @@ async function exportGIF() {
 
   gif.render();
 }
+const canvas = document.getElementById("field");
+const ctx = canvas.getContext("2d");
+
+let dragging = null;
+
+/* =========================
+   Eigene PNGs laden
+========================= */
+
+// Spielfeld
+const fieldImage = new Image();
+fieldImage.src = "bilder/spielfeld.png";
+
+// Ball
+const ballImage = new Image();
+ballImage.src = "bilder/ball.png";
+
+// Team Blau
+const bluePlayerImage = new Image();
+bluePlayerImage.src = "bilder/blau.png";
+
+// Team Rot
+const redPlayerImage = new Image();
+redPlayerImage.src = "bilder/rot.png";
+
+// Torwart Blau
+const blueGoalieImage = new Image();
+blueGoalieImage.src = "bilder/blau_goalie.png";
+
+// Torwart Rot
+const redGoalieImage = new Image();
+redGoalieImage.src = "bilder/rot_goalie.png";
+
+
+/* =========================
+   Canvas Größe
+========================= */
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth - 220;
+    canvas.height = window.innerHeight;
+    draw();
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+
+/* =========================
+   Touch + Maus Position
+========================= */
+
+function getPointerPos(e) {
+    const rect = canvas.getBoundingClientRect();
+
+    if (e.touches && e.touches.length > 0) {
+        return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        };
+    }
+
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+
+/* =========================
+   Spieler Beispiel
+========================= */
+
+const players = [
+    {
+        x: 200,
+        y: 200,
+        team: "blue",
+        goalie: false
+    },
+    {
+        x: 500,
+        y: 300,
+        team: "red",
+        goalie: false
+    }
+];
+
+const ball = {
+    x: 400,
+    y: 250
+};
+
+
+/* =========================
+   Zeichnen
+========================= */
+
+function draw() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Spielfeld als PNG
+    ctx.drawImage(fieldImage, 0, 0, canvas.width, canvas.height);
+
+    // Spieler
+    players.forEach(p => {
+
+        let img;
+
+        if (p.team === "blue") {
+            img = p.goalie ? blueGoalieImage : bluePlayerImage;
+        } else {
+            img = p.goalie ? redGoalieImage : redPlayerImage;
+        }
+
+        ctx.drawImage(img, p.x - 25, p.y - 25, 50, 50);
+    });
+
+    // Ball
+    ctx.drawImage(ballImage, ball.x - 12, ball.y - 12, 24, 24);
+}
+
+
+/* =========================
+   Drag Start
+========================= */
+
+function startDrag(e) {
+
+    e.preventDefault();
+
+    const pos = getPointerPos(e);
+
+    for (const p of players) {
+
+        const dx = pos.x - p.x;
+        const dy = pos.y - p.y;
+
+        if (Math.sqrt(dx * dx + dy * dy) < 30) {
+            dragging = p;
+            return;
+        }
+    }
+
+    // Ball
+    const dx = pos.x - ball.x;
+    const dy = pos.y - ball.y;
+
+    if (Math.sqrt(dx * dx + dy * dy) < 20) {
+        dragging = ball;
+    }
+}
+
+
+/* =========================
+   Drag Move
+========================= */
+
+function moveDrag(e) {
+
+    if (!dragging) return;
+
+    e.preventDefault();
+
+    const pos = getPointerPos(e);
+
+    dragging.x = pos.x;
+    dragging.y = pos.y;
+
+    draw();
+}
+
+
+/* =========================
+   Drag Ende
+========================= */
+
+function endDrag() {
+    dragging = null;
+}
+
+
+/* =========================
+   Maus Events
+========================= */
+
+canvas.addEventListener("mousedown", startDrag);
+canvas.addEventListener("mousemove", moveDrag);
+window.addEventListener("mouseup", endDrag);
+
+
+/* =========================
+   Touch Events
+========================= */
+
+canvas.addEventListener("touchstart", startDrag, { passive: false });
+canvas.addEventListener("touchmove", moveDrag, { passive: false });
+window.addEventListener("touchend", endDrag);
+
+
+/* =========================
+   Erstes Zeichnen
+========================= */
+
+fieldImage.onload = draw;
 </script>
 </body>
 <footer>
