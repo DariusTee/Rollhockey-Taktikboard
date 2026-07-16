@@ -197,12 +197,20 @@ z-index:50;
     <button class="tool-btn" onclick="exportGIF()">&#9654; GIF exportieren</button>
     <div id="gif-progress"></div>
     <p class="info-tag">GIF interpoliert Bewegungen automatisch zwischen Frames.</p>
-      <div class="tool-group">
-  <h3>Spielzüge</h3>
+  <div class="tool-group">
+<h3>Spielzüge</h3>
 
-  <button class="tool-btn" onclick="saveSpielzug()">
-    💾 Spielzug speichern
-  </button>
+<button class="tool-btn" onclick="saveSpielzug()">
+💾 Spielzug speichern
+</button>
+
+<button class="tool-btn" onclick="loadSpielzuege()">
+📂 Spielzug importieren
+</button>
+
+<div id="spielzug-liste"></div>
+
+</div>
 
 </div>
   </div>
@@ -225,9 +233,12 @@ import {
 getFirestore,
 collection,
 addDoc,
-serverTimestamp
+serverTimestamp,
+getDocs
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+window.firebaseGetDocs = getDocs;
     
 const firebaseConfig = {
   apiKey: "AIzaSyCctqi6kI2PkcsZrAVjH5Bhg5ISkTBJRuo",
@@ -728,6 +739,70 @@ async function saveSpielzug(){
 
         console.error(error);
         alert("Fehler beim Speichern");
+
+    }
+
+}
+async function loadSpielzuege(){
+
+    const liste = document.getElementById("spielzug-liste");
+
+    liste.innerHTML="Lade...";
+
+    try{
+
+        const snap = await firebaseGetDocs(
+            firebaseCollection(firebaseDB,"spielzuege")
+        );
+
+
+        liste.innerHTML="";
+
+
+        snap.forEach(doc=>{
+
+            const data = doc.data();
+
+
+            const btn=document.createElement("button");
+
+            btn.className="tool-btn";
+
+            btn.innerHTML =
+            "📋 "+data.name;
+
+
+            btn.onclick=()=>{
+
+                frames = data.frames;
+
+                currentFrame=0;
+
+                renderFrameList();
+                renderPlayerBtns();
+
+                draw(frames[0]);
+
+
+                alert(
+                    "Spielzug geladen: "
+                    + data.name
+                );
+
+            };
+
+
+            liste.appendChild(btn);
+
+
+        });
+
+
+    }catch(e){
+
+        console.error(e);
+
+        alert("Fehler beim Laden");
 
     }
 
