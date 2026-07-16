@@ -293,23 +293,68 @@ fieldImg.onload = function() {
   renderPlayerBtns();
   draw(frames[0]);
 };
+function rescaleFrames(oldW, oldH, newW, newH){
+
+    const scaleX = newW / oldW;
+    const scaleY = newH / oldH;
+
+
+    frames.forEach(frame=>{
+
+        frame.players.forEach(p=>{
+            p.x *= scaleX;
+            p.y *= scaleY;
+        });
+
+
+        frame.ball.x *= scaleX;
+        frame.ball.y *= scaleY;
+
+
+        frame.arrows.forEach(a=>{
+
+            a.x1 *= scaleX;
+            a.y1 *= scaleY;
+
+            a.x2 *= scaleX;
+            a.y2 *= scaleY;
+
+        });
+
+    });
+
+}
 window.addEventListener("resize", ()=>{
 
     if(!imgLoaded) return;
 
+
+    const oldW = W;
+    const oldH = H;
+
+
     const maxH = window.innerHeight - 30;
     const maxW = window.innerWidth - 240 - 30;
+
 
     const scale = Math.min(
         maxW / fieldImg.width,
         maxH / fieldImg.height
     );
 
+
     W = Math.round(fieldImg.width * scale);
     H = Math.round(fieldImg.height * scale);
 
+
+    if(oldW && oldH){
+        rescaleFrames(oldW, oldH, W, H);
+    }
+
+
     canvas.width=W;
     canvas.height=H;
+
 
     draw(frames[currentFrame]);
 
@@ -883,6 +928,7 @@ async function loadSpielzuege(){
     }
 
 }
+
 
 lockLandscape();
 
