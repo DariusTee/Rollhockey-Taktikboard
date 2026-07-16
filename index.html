@@ -197,6 +197,14 @@ z-index:50;
     <button class="tool-btn" onclick="exportGIF()">&#9654; GIF exportieren</button>
     <div id="gif-progress"></div>
     <p class="info-tag">GIF interpoliert Bewegungen automatisch zwischen Frames.</p>
+      <div class="tool-group">
+  <h3>Spielzüge</h3>
+
+  <button class="tool-btn" onclick="saveSpielzug()">
+    💾 Spielzug speichern
+  </button>
+
+</div>
   </div>
 </div>
 
@@ -687,6 +695,38 @@ function toggleTools(){
 
 document.getElementById("sidebar")
 .classList.toggle("hidden");
+
+}
+async function saveSpielzug(){
+
+    const name = prompt("Name des Spielzugs:");
+
+    if(!name) return;
+
+
+    try {
+
+        await firebaseAddDoc(
+            firebaseCollection(firebaseDB, "spielzuege"),
+            {
+                name: name,
+                kategorie: "Angriff",
+                beschreibung: "",
+                preview: "",
+                frames: frames,
+                erstellt: firebaseServerTimestamp()
+            }
+        );
+
+
+        alert("Spielzug gespeichert: " + name);
+
+    } catch(error){
+
+        console.error(error);
+        alert("Fehler beim Speichern");
+
+    }
 
 }
 
