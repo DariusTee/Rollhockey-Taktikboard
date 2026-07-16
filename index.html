@@ -209,14 +209,18 @@ z-index:50;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 <script type="module">
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { 
+getFirestore,
+collection,
+addDoc,
+serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    
 const firebaseConfig = {
   apiKey: "AIzaSyCctqi6kI2PkcsZrAVjH5Bhg5ISkTBJRuo",
   authDomain: "rollhockey-taktikboard.firebaseapp.com",
@@ -229,7 +233,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+const db = getFirestore(app);
+
+
+window.firebaseDB = db;
+window.firebaseCollection = collection;
+window.firebaseAddDoc = addDoc;
+window.firebaseServerTimestamp = serverTimestamp;
+
+
+console.log("Firebase verbunden");
     
 const FIELD_IMG_SRC = "bilder_webp_Spielzüge_Rollhockey Spielfeld.png"
 const canvas = document.getElementById('field');
