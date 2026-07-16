@@ -263,7 +263,21 @@ function draw(state) { drawState(ctx, canvas, state); }
 
 function getMousePos(e) {
   const r = canvas.getBoundingClientRect();
-  return { x: (e.clientX-r.left)*(W/r.width), y: (e.clientY-r.top)*(H/r.height) };
+
+  let x, y;
+
+  if (e.touches && e.touches.length > 0) {
+    x = e.touches[0].clientX;
+    y = e.touches[0].clientY;
+  } else {
+    x = e.clientX;
+    y = e.clientY;
+  }
+
+  return {
+    x: (x - r.left) * (W / r.width),
+    y: (y - r.top) * (H / r.height)
+  };
 }
 
 function hitPlayer(state, mx, my) {
@@ -271,6 +285,54 @@ function hitPlayer(state, mx, my) {
   return state.players.find(p => Math.hypot(p.x-mx, p.y-my) < r);
 }
 function hitBall(state, mx, my) { return Math.hypot(state.ball.x-mx, state.ball.y-my) < 14; }
+
+  function startDrag(e) {
+  e.preventDefault();
+
+  const pos = getMousePos(e);
+  const state = frames[currentFrame];
+
+  // Spieler auswählen
+  const player = hitPlayer(state, pos.x, pos.y);
+
+  if (player && tool === 'select') {
+    dragTarget = player;
+    dragOffX = pos.x - player.x;
+    dragOffY = pos.y - player.y;
+    selectedId = player.id;
+    draw(state);
+    return;
+  }
+
+  // Ball auswählen
+  if (hitBall(state, pos.x, pos.y) && tool === 'select') {
+    dragTarget = state.ball;
+    dragOffX = pos.x - state.ball.x;
+    dragOffY = pos.y - state.ball.y;
+    selectedId = null;
+    draw(state);
+    return;
+  }
+}
+
+
+function moveDrag(e) {
+  if (!dragTarget) return;
+
+  e.preventDefault();
+
+  const pos = getMousePos(e);
+
+  dragTarget.x = pos.x - dragOffX;
+  dragTarget.y = pos.y - dragOffY;
+
+  draw(frames[currentFrame]);
+}
+
+
+function endDrag() {
+  dragTarget = null;
+}
 
 canvas.addEventListener("mousedown", startDrag);
 canvas.addEventListener("mousemove", moveDrag);
