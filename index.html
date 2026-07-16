@@ -711,6 +711,82 @@ document.getElementById("sidebar")
 .classList.toggle("hidden");
 
 }
+function normalizeFrames(frames){
+
+    return frames.map(frame=>{
+
+        return {
+
+            players: frame.players.map(p=>({
+                id:p.id,
+                team:p.team,
+                role:p.role,
+                label:p.label,
+
+                x:p.x / W,
+                y:p.y / H
+            })),
+
+            ball:{
+                x:frame.ball.x / W,
+                y:frame.ball.y / H
+            },
+
+            arrows:frame.arrows.map(a=>({
+
+                type:a.type,
+
+                x1:a.x1 / W,
+                y1:a.y1 / H,
+
+                x2:a.x2 / W,
+                y2:a.y2 / H
+
+            }))
+
+        };
+
+    });
+
+}
+function denormalizeFrames(frames){
+
+    return frames.map(frame=>{
+
+        return {
+
+            players: frame.players.map(p=>({
+                id:p.id,
+                team:p.team,
+                role:p.role,
+                label:p.label,
+
+                x:p.x * W,
+                y:p.y * H
+            })),
+
+            ball:{
+                x:frame.ball.x * W,
+                y:frame.ball.y * H
+            },
+
+            arrows:frame.arrows.map(a=>({
+
+                type:a.type,
+
+                x1:a.x1 * W,
+                y1:a.y1 * H,
+
+                x2:a.x2 * W,
+                y2:a.y2 * H
+
+            }))
+
+        };
+
+    });
+
+}
 async function saveSpielzug(){
 
     const name = prompt("Name des Spielzugs:");
@@ -727,7 +803,7 @@ async function saveSpielzug(){
                 kategorie: "Angriff",
                 beschreibung: "",
                 preview: "",
-                frames: frames,
+                frames: normalizeFrames(frames),
                 erstellt: firebaseServerTimestamp()
             }
         );
@@ -774,7 +850,7 @@ async function loadSpielzuege(){
 
             btn.onclick=()=>{
 
-                frames = data.frames;
+                frames = denormalizeFrames(data.frames);
 
                 currentFrame=0;
 
