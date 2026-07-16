@@ -6,18 +6,64 @@
 <title>Rollhockey Taktikboard</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, sans-serif; background: #1a1a2e; color: #eee; display: flex; height: 100vh; overflow: hidden; }
-#sidebar { width: 210px; min-width: 210px; background: #16213e; border-right: 1px solid #0f3460; display: flex; flex-direction: column; padding: 10px; gap: 6px; overflow-y: auto; }
-#canvas-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; background: #0f0f1a; }
-#field { display: block; cursor: crosshair; border-radius: 8px; }
+body {
+    font-family: system-ui, sans-serif;
+    background:#111827;
+    color:white;
+    display:flex;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    touch-action:none;
+}
+
+
+#sidebar {
+    width:240px;
+    min-width:240px;
+    background:#16213e;
+    padding:12px;
+    overflow-y:auto;
+}
+
+
+#canvas-area {
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#050816;
+    padding:10px;
+}
+
+
+#field {
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+    border-radius:12px;
+    touch-action:none;
+}
+
+
+.tool-btn {
+    min-height:44px;
+    font-size:15px;
+    padding:10px;
+    border-radius:10px;
+}
+
+
+.frame-btn {
+    min-height:40px;
+    font-size:14px;
+}
 .tool-group { border: 1px solid #0f3460; border-radius: 8px; padding: 8px; background: #1a1a2e; }
 .tool-group h3 { font-size: 10px; font-weight: 600; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-.tool-btn { width: 100%; padding: 6px 8px; font-size: 12px; font-weight: 500; border: 1px solid #2d3748; border-radius: 6px; background: #2d3748; color: #e2e8f0; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 6px; transition: all 0.15s; margin-bottom: 3px; }
-.tool-btn:hover { background: #4a5568; }
 .tool-btn.active { background: #185FA5; color: #fff; border-color: #2b7de9; }
 .tool-btn:last-child { margin-bottom: 0; }
 .frame-row { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
-.frame-btn { padding: 4px 8px; font-size: 11px; border: 1px solid #2d3748; border-radius: 4px; background: #2d3748; color: #e2e8f0; cursor: pointer; }
 .frame-btn:hover { background: #4a5568; }
 #frame-list { display: flex; flex-wrap: wrap; gap: 3px; }
 .frame-thumb { width: 30px; height: 44px; border: 1.5px solid #2d3748; border-radius: 3px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #a0aec0; background: #1a1a2e; }
@@ -38,6 +84,11 @@ label { font-size: 10px; color: #718096; display: block; margin-bottom: 2px; }
 <body>
 
 <div id="sidebar">
+  <div class="tool-group">
+  <button class="tool-btn" onclick="toggleFullscreen()">
+    ⛶ Vollbild
+  </button>
+</div>
   <div class="tool-group">
     <h3>Werkzeug</h3>
     <button class="tool-btn active" id="btn-select" onclick="setTool('select')">&#9654; Auswählen / Ziehen</button>
@@ -115,8 +166,10 @@ let imgLoaded = false;
 fieldImg.onload = function() {
   imgLoaded = true;
   // fit to window
-  const maxH = window.innerHeight - 40;
-  const maxW = window.innerWidth - 230;
+  const sidebarWidth = 240;
+
+  const maxH = window.innerHeight - 30;
+  const maxW = window.innerWidth - sidebarWidth - 30;
   const scale = Math.min(maxW / fieldImg.width, maxH / fieldImg.height, 1);
   W = Math.round(fieldImg.width * scale);
   H = Math.round(fieldImg.height * scale);
@@ -128,6 +181,27 @@ fieldImg.onload = function() {
   renderPlayerBtns();
   draw(frames[0]);
 };
+window.addEventListener("resize", ()=>{
+
+    if(!imgLoaded) return;
+
+    const maxH = window.innerHeight - 30;
+    const maxW = window.innerWidth - 240 - 30;
+
+    const scale = Math.min(
+        maxW / fieldImg.width,
+        maxH / fieldImg.height
+    );
+
+    W = Math.round(fieldImg.width * scale);
+    H = Math.round(fieldImg.height * scale);
+
+    canvas.width=W;
+    canvas.height=H;
+
+    draw(frames[currentFrame]);
+
+});
 fieldImg.src = FIELD_IMG_SRC;
 
 let tool = 'select';
@@ -340,7 +414,9 @@ canvas.addEventListener("mousemove", moveDrag);
 window.addEventListener("mouseup", endDrag);
 
 canvas.addEventListener("touchstart", startDrag, { passive: false });
-canvas.addEventListener("touchmove", moveDrag, { passive: false });
+canvas.addEventListener("touchmove", moveDrag, {
+    passive:false
+});
 window.addEventListener("touchend", endDrag);
 
 function renderFrameList() {
@@ -492,6 +568,19 @@ async function exportGIF() {
   }
 
   gif.render();
+}
+
+      function toggleFullscreen(){
+
+    if(!document.fullscreenElement){
+
+        document.documentElement.requestFullscreen();
+
+    } else {
+
+        document.exitFullscreen();
+
+    }
 }
 
 </script>
