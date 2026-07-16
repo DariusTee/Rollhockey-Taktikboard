@@ -109,6 +109,7 @@ const canvas = document.getElementById('field');
 const ctx = canvas.getContext('2d');
 let W, H;
 let fieldImg = new Image();
+fieldImg.crossOrigin = "anonymous";
 let imgLoaded = false;
 
 fieldImg.onload = function() {
