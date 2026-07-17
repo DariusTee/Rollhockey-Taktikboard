@@ -211,6 +211,9 @@ z-index:50;
 <div id="spielzug-liste"></div>
 
 </div>
+<button class="tool-btn" onclick="exportChallengeJSON()">
+🎯 Challenge exportieren
+</button>
 
 </div>
   </div>
@@ -926,6 +929,81 @@ async function loadSpielzuege(){
         alert("Fehler beim Laden");
 
     }
+
+}
+async function exportChallengeJSON(){
+
+    const title =
+        prompt("Name der Challenge:", "Neuer Spielzug");
+
+    if(!title) return;
+
+    const targetFrame =
+        parseInt(
+            prompt(
+                "Welcher Frame ist die Lösung?",
+                frames.length - 1
+            )
+        );
+
+    const tolerance =
+        parseInt(
+            prompt(
+                "Toleranz in Pixel",
+                20
+            )
+        );
+
+    const data = {
+
+        version:1,
+
+        title,
+
+        sport:"rollhockey",
+
+        created:new Date().toISOString(),
+
+        frames: normalizeFrames(frames),
+
+        quiz:{
+            type:"drag_players",
+
+            startFrame:0,
+
+            targetFrame,
+
+            movablePlayers:
+                frames[0]
+                .players
+                .filter(p=>p.team==="A")
+                .map(p=>p.id),
+
+            ball:true,
+
+            tolerance
+        }
+
+    };
+
+    const blob = new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:"application/json"}
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a=document.createElement("a");
+
+    a.href=url;
+
+    a.download=
+        title.replace(/\s+/g,"_")
+        +".json";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
 
 }
 
