@@ -622,15 +622,76 @@ function delFrame() {
   renderFrameList();draw(frames[currentFrame]);
 }
 
+let animFrame = null;
+let playing = false;
+
 function playAnim() {
-  if(animTimer){clearInterval(animTimer);animTimer=null;document.getElementById('btn-play').textContent='▶ Play';return;}
-  let fi=0;
-  document.getElementById('btn-play').textContent='⏹ Stop';
-  animTimer=setInterval(()=>{
-    currentFrame=fi%frames.length;
-    renderFrameList();draw(frames[currentFrame]);
-    fi++;
-  },parseInt(document.getElementById('gif-delay').value));
+
+    if (playing) {
+        playing = false;
+        cancelAnimationFrame(animFrame);
+        document.getElementById("btn-play").textContent = "▶ Play";
+        draw(frames[currentFrame]);
+        return;
+    }
+
+    playing = true;
+    document.getElementById("btn-play").textContent = "⏹ Stop";
+
+    const delay = parseInt(document.getElementById("gif-delay").value);
+    const steps = parseInt(document.getElementById("interp-steps").value);
+
+    let frameIndex = 0;
+    let interpStep = 0;
+    let lastTime = 0;
+
+    function animate(time) {
+
+        if (!playing) return;
+
+        if (time - lastTime >= delay / (steps + 1)) {
+
+            lastTime = time;
+
+            if (frameIndex >= frames.length - 1) {
+
+                draw(frames[frames.length - 1]);
+
+                frameIndex = 0;
+                interpStep = 0;
+
+            } else {
+
+                if (interpStep === 0) {
+
+                    draw(frames[frameIndex]);
+
+                } else {
+
+                    const t = interpStep / (steps + 1);
+
+                    draw(
+                        lerpState(
+                            frames[frameIndex],
+                            frames[frameIndex + 1],
+                            t
+                        )
+                    );
+                }
+
+                interpStep++;
+
+                if (interpStep > steps + 1) {
+                    interpStep = 0;
+                    frameIndex++;
+                }
+            }
+        }
+
+        animFrame = requestAnimationFrame(animate);
+    }
+
+    animFrame = requestAnimationFrame(animate);
 }
 
 function exportPNG() {
