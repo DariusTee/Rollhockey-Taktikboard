@@ -143,6 +143,13 @@ z-index:50;
   <div class="tool-group">
     <h3>Werkzeug</h3>
     <button class="tool-btn active" id="btn-select" onclick="setTool('select')">&#9654; Auswählen / Ziehen</button>
+      <button class="tool-btn" onclick="addPlayer('A')">
++ Spieler A
+</button>
+
+<button class="tool-btn" onclick="addPlayer('B')">
++ Spieler B
+</button>
     <button class="tool-btn" id="btn-run" onclick="setTool('run')"><span style="color:#22c55e">&#10230;</span> Laufpfeil</button>
     <button class="tool-btn" id="btn-pass" onclick="setTool('pass')"><span style="color:#3b82f6">&#10230;</span> Passpfeil</button>
     <button class="tool-btn" id="btn-shoot" onclick="setTool('shoot')"><span style="color:#ef4444">&#10230;</span> Schusspfeil</button>
@@ -522,32 +529,94 @@ function hitPlayer(state, mx, my) {
 function hitBall(state, mx, my) { return Math.hypot(state.ball.x-mx, state.ball.y-my) < 14; }
 
   function startDrag(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const pos = getMousePos(e);
-  const state = frames[currentFrame];
+    const pos = getMousePos(e);
+    const state = frames[currentFrame];
 
-  // Spieler auswählen
-  const player = hitPlayer(state, pos.x, pos.y);
 
-  if (player && tool === 'select') {
-    dragTarget = player;
-    dragOffX = pos.x - player.x;
-    dragOffY = pos.y - player.y;
-    selectedId = player.id;
-    draw(state);
-    return;
-  }
+    // Spieler löschen
+    if (tool === "delete") {
 
-  // Ball auswählen
-  if (hitBall(state, pos.x, pos.y) && tool === 'select') {
-    dragTarget = state.ball;
-    dragOffX = pos.x - state.ball.x;
-    dragOffY = pos.y - state.ball.y;
-    selectedId = null;
-    draw(state);
-    return;
-  }
+        const player = hitPlayer(state, pos.x, pos.y);
+
+        if(player){
+            state.players = state.players.filter(
+                p => p.id !== player.id
+            );
+
+            renderPlayerBtns();
+            draw(state);
+            return;
+        }
+
+
+        // Ball löschen
+        if(hitBall(state,pos.x,pos.y)){
+            state.ball = {
+                x: W/2,
+                y: H/2
+            };
+
+            draw(state);
+            return;
+        }
+
+    }
+
+
+    // Ball setzen
+    if(tool === "ball"){
+
+        state.ball.x = pos.x;
+        state.ball.y = pos.y;
+
+        draw(state);
+        return;
+    }
+
+
+    // Pfeil starten
+    if(tool === "run" ||
+       tool === "pass" ||
+       tool === "shoot"){
+
+        arrowStart = pos;
+
+        return;
+    }
+
+
+    // Spieler auswählen / bewegen
+    const player = hitPlayer(state,pos.x,pos.y);
+
+    if(player && tool==="select"){
+
+        dragTarget = player;
+
+        dragOffX = pos.x-player.x;
+        dragOffY = pos.y-player.y;
+
+        selectedId = player.id;
+
+        draw(state);
+        return;
+    }
+
+
+    // Ball bewegen
+    if(hitBall(state,pos.x,pos.y) && tool==="select"){
+
+        dragTarget = state.ball;
+
+        dragOffX = pos.x-state.ball.x;
+        dragOffY = pos.y-state.ball.y;
+
+        selectedId=null;
+
+        draw(state);
+        return;
+    }
 }
 
 
@@ -565,8 +634,34 @@ function moveDrag(e) {
 }
 
 
-function endDrag() {
-  dragTarget = null;
+function endDrag(e) {
+
+    if(arrowStart){
+
+        const pos = getMousePos(e);
+        const state = frames[currentFrame];
+
+
+        state.arrows.push({
+
+            x1: arrowStart.x,
+            y1: arrowStart.y,
+
+            x2: pos.x,
+            y2: pos.y,
+
+            type: tool
+
+        });
+
+
+        arrowStart=null;
+
+        draw(state);
+    }
+
+
+    dragTarget=null;
 }
 
 canvas.addEventListener("mousedown", startDrag);
@@ -1070,7 +1165,34 @@ async function exportChallengeJSON(){
 
 
 lockLandscape();
+function addPlayer(team){
 
+    const state = frames[currentFrame];
+
+    const count =
+        state.players.filter(p=>p.team===team).length+1;
+
+
+    state.players.push({
+
+        id:mkId(),
+
+        team:team,
+
+        role:"field",
+
+        x:W/2,
+
+        y:H/2,
+
+        label:team+count
+
+    });
+
+
+    renderPlayerBtns();
+    draw(state);
+}
 </script>
 </body>
 <footer>
