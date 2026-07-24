@@ -552,15 +552,13 @@ function hitBall(state, mx, my) { return Math.hypot(state.ball.x-mx, state.ball.
 
 
         // Ball löschen
-        if(hitBall(state,pos.x,pos.y)){
-            state.ball = {
-                x: W/2,
-                y: H/2
-            };
+        // Ball löschen
+if(hitBall(state,pos.x,pos.y)){
+    state.ball = null;
 
-            draw(state);
-            return;
-        }
+    draw(state);
+    return;
+}
 
     }
 
