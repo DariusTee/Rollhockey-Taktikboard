@@ -402,7 +402,11 @@ function defaultState() {
       { id: mkId(), team: 'B', role: 'field', x: cx+W*0.18, y: H*0.75, label: 'B3' },
       { id: mkId(), team: 'B', role: 'field', x: cx, y: H*0.58, label: 'B4' },
     ],
-    ball: { x: cx, y: cy },
+    ball: { 
+    x: cx, 
+    y: cy,
+    visible: true
+},
     arrows: []
   };
 }
@@ -464,19 +468,34 @@ function drawState(targetCtx, targetCanvas, state) {
   state.arrows.forEach(a => drawArrow(targetCtx, a.x1, a.y1, a.x2, a.y2, a.type));
 
   // ball
-  const b = state.ball;
-  const br = Math.max(7, targetCanvas.width * 0.014);
-  targetCtx.fillStyle = '#fff';
-  targetCtx.strokeStyle = '#111';
-  targetCtx.lineWidth = 2;
-  targetCtx.beginPath();
-  targetCtx.arc(b.x, b.y, br, 0, Math.PI*2);
-  targetCtx.fill();
-  targetCtx.stroke();
-  targetCtx.fillStyle = '#222';
-  targetCtx.beginPath();
-  targetCtx.arc(b.x-br*0.25, b.y-br*0.25, br*0.32, 0, Math.PI*2);
-  targetCtx.fill();
+  // Ball zeichnen
+if(state.ball.visible !== false){
+
+    const b = state.ball;
+
+    const br = Math.max(7, targetCanvas.width * 0.014);
+
+    targetCtx.fillStyle = '#fff';
+    targetCtx.strokeStyle = '#111';
+    targetCtx.lineWidth = 2;
+
+    targetCtx.beginPath();
+    targetCtx.arc(b.x, b.y, br, 0, Math.PI*2);
+    targetCtx.fill();
+    targetCtx.stroke();
+
+    targetCtx.fillStyle = '#222';
+    targetCtx.beginPath();
+    targetCtx.arc(
+        b.x-br*0.25,
+        b.y-br*0.25,
+        br*0.32,
+        0,
+        Math.PI*2
+    );
+    targetCtx.fill();
+
+}
 
   const pr = Math.max(12, targetCanvas.width * 0.025);
   state.players.forEach(p => {
@@ -552,9 +571,9 @@ function hitBall(state, mx, my) { return Math.hypot(state.ball.x-mx, state.ball.
 
 
         // Ball löschen
-        // Ball löschen
-if(hitBall(state,pos.x,pos.y)){
-    state.ball = null;
+   if(hitBall(state,pos.x,pos.y)){
+
+    state.ball.visible = false;
 
     draw(state);
     return;
@@ -566,12 +585,13 @@ if(hitBall(state,pos.x,pos.y)){
     // Ball setzen
     if(tool === "ball"){
 
-        state.ball.x = pos.x;
-        state.ball.y = pos.y;
+    state.ball.x = pos.x;
+    state.ball.y = pos.y;
+    state.ball.visible = true;
 
-        draw(state);
-        return;
-    }
+    draw(state);
+    return;
+}
 
 
     // Pfeil starten
