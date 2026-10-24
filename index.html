@@ -24,7 +24,7 @@ right:20px;
 top:20px;
 bottom:20px;
 
-width:180px;
+width:220px;
 
 background:rgba(15,23,42,.85);
 backdrop-filter:blur(10px);
@@ -81,11 +81,26 @@ border-radius:20px;
 
 
 .tool-btn {
+    display:block;
+    width:100%;
+    margin-bottom:6px;
+    border:1px solid #334155;
+    background:#263247;
+    color:#f8fafc;
+    cursor:pointer;
+    text-align:center;
+    text-decoration:none;
     min-height:44px;
     font-size:15px;
     padding:10px;
     border-radius:10px;
 }
+
+.tool-btn:disabled,
+.frame-btn:disabled { opacity:.45; cursor:not-allowed; }
+.team-summary { font-size:12px; line-height:1.4; color:#cbd5e1; margin-bottom:7px; }
+.team-summary strong { color:#fff; display:block; font-size:13px; }
+.role-badge { display:inline-flex; align-items:center; padding:2px 7px; margin-top:3px; border-radius:999px; background:#0f3460; color:#bfdbfe; font-size:10px; }
 
 
 .frame-btn {
@@ -130,31 +145,111 @@ border:none;
 z-index:50;
 
 }
+
+.team-modal {
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(2,6,23,.78);
+    backdrop-filter:blur(8px);
+}
+.team-modal.hidden { display:none; }
+.team-panel {
+    width:min(980px, 100%);
+    max-height:min(88vh, 900px);
+    overflow:auto;
+    border:1px solid #334155;
+    border-radius:20px;
+    background:#0f172a;
+    box-shadow:0 24px 80px rgba(0,0,0,.45);
+}
+.team-panel-header { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 20px; background:rgba(15,23,42,.96); border-bottom:1px solid #334155; }
+.team-panel-header h2 { font-size:20px; }
+.icon-btn { width:42px; height:42px; border-radius:50%; border:1px solid #475569; background:#1e293b; color:#fff; cursor:pointer; font-size:22px; }
+.team-panel-body { padding:20px; }
+.team-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.team-toolbar p { color:#94a3b8; font-size:12px; }
+.team-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; }
+.team-card { padding:15px; border:1px solid #334155; border-radius:14px; background:#111c31; text-align:left; color:#fff; cursor:pointer; }
+.team-card:hover, .team-card.active { border-color:#3b82f6; background:#172554; }
+.team-card h3 { font-size:15px; margin-bottom:6px; }
+.team-card p { min-height:34px; color:#94a3b8; font-size:12px; line-height:1.4; }
+.team-card-meta { display:flex; justify-content:space-between; gap:8px; margin-top:10px; color:#93c5fd; font-size:10px; }
+.team-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.primary-btn, .secondary-btn, .danger-btn, .small-btn { border-radius:9px; border:1px solid transparent; padding:9px 13px; color:#fff; cursor:pointer; font-weight:600; }
+.primary-btn { background:#2563eb; }
+.secondary-btn { background:#253349; border-color:#475569; }
+.danger-btn { background:#991b1b; }
+.small-btn { padding:6px 9px; background:#263247; border-color:#475569; font-size:11px; }
+.team-form { display:grid; gap:10px; margin:14px 0 20px; padding:16px; border:1px solid #334155; border-radius:14px; background:#111827; }
+.team-form.hidden, .team-view.hidden, .admin-only.hidden, .team-form .hidden, #delete-team-btn.hidden { display:none; }
+.team-form label { color:#cbd5e1; font-size:12px; }
+.team-form input, .team-form textarea, .team-form select, .copy-dialog select {
+    width:100%; padding:10px; border:1px solid #475569; border-radius:9px; background:#1e293b; color:#fff;
+}
+.team-form textarea { min-height:74px; resize:vertical; }
+.checkbox-row { display:flex; align-items:center; gap:8px; }
+.checkbox-row input { width:auto; }
+.team-detail-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; padding-bottom:16px; border-bottom:1px solid #334155; }
+.team-detail-header h3 { font-size:22px; }
+.team-detail-header p { margin-top:5px; color:#94a3b8; max-width:620px; line-height:1.45; }
+.team-section { margin-top:22px; }
+.team-section h4 { margin-bottom:10px; color:#dbeafe; }
+.list-card { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 12px; margin-bottom:8px; border:1px solid #334155; border-radius:11px; background:#111827; }
+.list-card-main { min-width:0; }
+.list-card-main strong { display:block; overflow:hidden; text-overflow:ellipsis; }
+.list-card-main span { color:#94a3b8; font-size:11px; }
+.list-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.empty-state { padding:18px; border:1px dashed #475569; border-radius:12px; color:#94a3b8; text-align:center; font-size:13px; }
+.team-notice { display:none; padding:10px 12px; margin-bottom:14px; border-radius:10px; background:#172554; color:#bfdbfe; font-size:12px; }
+.team-notice.visible { display:block; }
+.team-notice.error { background:#450a0a; color:#fecaca; }
+.copy-dialog { width:min(430px, calc(100% - 32px)); padding:20px; border:1px solid #475569; border-radius:16px; background:#0f172a; color:#fff; }
+.copy-dialog::backdrop { background:rgba(2,6,23,.75); }
+.copy-dialog h3 { margin-bottom:12px; }
+.copy-dialog .team-actions { margin-top:14px; justify-content:flex-end; }
+
+@media (max-width: 720px) {
+  #sidebar { left:8px; right:8px; top:8px; bottom:78px; width:auto; border-radius:15px; }
+  #menuBtn { right:14px; bottom:14px; }
+  #field { width:100vw; height:100vh; border-radius:0; }
+  .team-modal { padding:0; }
+  .team-panel { width:100%; max-height:100vh; min-height:100vh; border-radius:0; border:0; }
+  .team-panel-body { padding:14px; }
+  .list-card { align-items:flex-start; flex-direction:column; }
+  .list-actions { justify-content:flex-start; }
+}
 </style>
 </head>
 <body>
 
 <div id="sidebar">
   <div class="tool-group">
-  <button class="tool-btn" onclick="toggleFullscreen()">
-    ⛶ Vollbild
-  </button>
-</div>
+    <h3>Team &amp; Zugriff</h3>
+    <div class="team-summary">
+      <strong id="current-team-name">Lokales Board</strong>
+      <span id="current-team-role" class="role-badge">Wird verbunden …</span>
+    </div>
+    <select id="current-team-select" aria-label="Aktives Team">
+      <option value="">Lokales Board</option>
+    </select>
+    <button class="tool-btn" onclick="openTeamPanel()">👥 Meine Teams</button>
+    <button class="tool-btn" onclick="toggleFullscreen()">⛶ Vollbild</button>
+  </div>
   <div class="tool-group">
     <h3>Werkzeug</h3>
-    <button class="tool-btn active" id="btn-select" onclick="setTool('select')">&#9654; Auswählen / Ziehen</button>
-      <button class="tool-btn" onclick="addPlayer('A')">
-+ Spieler A
-</button>
-
-<button class="tool-btn" onclick="addPlayer('B')">
-+ Spieler B
-</button>
-    <button class="tool-btn" id="btn-run" onclick="setTool('run')"><span style="color:#22c55e">&#10230;</span> Laufpfeil</button>
-    <button class="tool-btn" id="btn-pass" onclick="setTool('pass')"><span style="color:#3b82f6">&#10230;</span> Passpfeil</button>
-    <button class="tool-btn" id="btn-shoot" onclick="setTool('shoot')"><span style="color:#ef4444">&#10230;</span> Schusspfeil</button>
-    <button class="tool-btn" id="btn-ball" onclick="setTool('ball')">&#9675; Ball setzen</button>
-    <button class="tool-btn" id="btn-delete" onclick="setTool('delete')">&#10005; Löschen</button>
+    <button class="tool-btn editor-control active" id="btn-select" onclick="setTool('select')">&#9654; Auswählen / Ziehen</button>
+    <button class="tool-btn editor-control" onclick="addPlayer('A')">+ Spieler A</button>
+    <button class="tool-btn editor-control" onclick="addPlayer('B')">+ Spieler B</button>
+    <button class="tool-btn editor-control" id="btn-run" onclick="setTool('run')"><span style="color:#22c55e">&#10230;</span> Laufpfeil</button>
+    <button class="tool-btn editor-control" id="btn-pass" onclick="setTool('pass')"><span style="color:#3b82f6">&#10230;</span> Passpfeil</button>
+    <button class="tool-btn editor-control" id="btn-shoot" onclick="setTool('shoot')"><span style="color:#ef4444">&#10230;</span> Schusspfeil</button>
+    <button class="tool-btn editor-control" id="btn-ball" onclick="setTool('ball')">&#9675; Ball setzen</button>
+    <button class="tool-btn editor-control" id="btn-delete" onclick="setTool('delete')">&#10005; Löschen</button>
   </div>
 
   <div class="tool-group">
@@ -179,8 +274,8 @@ z-index:50;
     <h3>Frames / Animation</h3>
     <div id="frame-list"></div>
     <div class="frame-row">
-      <button class="frame-btn" onclick="addFrame()">+ Frame</button>
-      <button class="frame-btn" onclick="delFrame()">– Frame</button>
+      <button class="frame-btn editor-control" onclick="addFrame()">+ Frame</button>
+      <button class="frame-btn editor-control" onclick="delFrame()">– Frame</button>
       <button class="frame-btn" id="btn-play" onclick="playAnim()">&#9654; Play</button>
     </div>
     <div id="status"></div>
@@ -204,25 +299,18 @@ z-index:50;
     <button class="tool-btn" onclick="exportGIF()">&#9654; GIF exportieren</button>
     <div id="gif-progress"></div>
     <p class="info-tag">GIF interpoliert Bewegungen automatisch zwischen Frames.</p>
+  </div>
   <div class="tool-group">
-<h3>Spielzüge</h3>
-
-<button class="tool-btn" onclick="saveSpielzug()">
-💾 Spielzug speichern
-</button>
-
-<button class="tool-btn" onclick="loadSpielzuege()">
-📂 Spielzug importieren
-</button>
-
-<div id="spielzug-liste"></div>
-
-</div>
-<button class="tool-btn" onclick="exportChallengeJSON()">
-🎯 Challenge exportieren
-</button>
-
-</div>
+    <h3>Taktiken</h3>
+    <button class="tool-btn editor-control" id="save-tactic-btn" onclick="saveSpielzug()">💾 Taktik speichern</button>
+    <button class="tool-btn" onclick="loadSpielzuege()">📂 Teamübersicht öffnen</button>
+    <button class="tool-btn" onclick="exportChallengeJSON()">🎯 Challenge exportieren</button>
+    <div id="spielzug-liste"></div>
+  </div>
+  <div class="tool-group">
+    <h3>Rechtliches</h3>
+    <a class="tool-btn" href="./impressum.html">Impressum</a>
+    <a class="tool-btn" href="./datenschutz.html">Datenschutz</a>
   </div>
 </div>
 
@@ -233,48 +321,111 @@ z-index:50;
   <canvas id="field"></canvas>
 </div>
 
+<div id="team-modal" class="team-modal hidden" role="dialog" aria-modal="true" aria-labelledby="team-panel-title">
+  <div class="team-panel">
+    <div class="team-panel-header">
+      <div>
+        <h2 id="team-panel-title">Teamverwaltung</h2>
+        <div id="auth-status" class="role-badge">Anmeldung wird vorbereitet …</div>
+      </div>
+      <button class="icon-btn" type="button" onclick="closeTeamPanel()" aria-label="Teamverwaltung schließen">×</button>
+    </div>
+    <div class="team-panel-body">
+      <div id="team-notice" class="team-notice" role="status" aria-live="polite"></div>
+
+      <section id="teams-view" class="team-view">
+        <div class="team-toolbar">
+          <div>
+            <h3>Meine Teams</h3>
+            <p>Eigene Mitgliedschaften und öffentliche Teams</p>
+          </div>
+          <div class="team-actions">
+            <button id="show-create-team" class="primary-btn" type="button">Team erstellen</button>
+            <button id="show-join-team" class="secondary-btn" type="button">Team beitreten</button>
+          </div>
+        </div>
+
+        <form id="create-team-form" class="team-form hidden">
+          <h3>Neues Team</h3>
+          <label>Teamname<input id="create-team-name" maxlength="80" required></label>
+          <label>Beschreibung<textarea id="create-team-description" maxlength="500"></textarea></label>
+          <label class="checkbox-row"><input id="create-team-private" type="checkbox"> Privates Team</label>
+          <label id="create-team-password-row" class="hidden">Team-Passwort<input id="create-team-password" type="password" minlength="8" maxlength="128" autocomplete="new-password"></label>
+          <div class="team-actions">
+            <button class="primary-btn" type="submit">Erstellen</button>
+            <button class="secondary-btn cancel-form" type="button">Abbrechen</button>
+          </div>
+        </form>
+
+        <form id="join-team-form" class="team-form hidden">
+          <h3>Team beitreten</h3>
+          <label>Teamcode oder Einladungslink<input id="join-team-code" required autocomplete="off" placeholder="z. B. AB12CD34"></label>
+          <label>Passwort (nur bei privaten Teams)<input id="join-team-password" type="password" maxlength="128" autocomplete="current-password"></label>
+          <div class="team-actions">
+            <button class="primary-btn" type="submit">Beitreten</button>
+            <button class="secondary-btn cancel-form" type="button">Abbrechen</button>
+          </div>
+        </form>
+
+        <div id="team-list" class="team-grid"><div class="empty-state">Teams werden geladen …</div></div>
+      </section>
+
+      <section id="team-detail-view" class="team-view hidden">
+        <button id="back-to-teams" class="secondary-btn" type="button">← Alle Teams</button>
+        <div class="team-detail-header team-section">
+          <div>
+            <h3 id="detail-team-name">Team</h3>
+            <p id="detail-team-description"></p>
+            <span id="detail-team-visibility" class="role-badge"></span>
+          </div>
+          <div class="team-actions">
+            <button id="new-tactic-btn" class="primary-btn admin-only" type="button">Neue Taktik</button>
+            <button id="copy-invite-btn" class="secondary-btn member-only" type="button">Einladung kopieren</button>
+          </div>
+        </div>
+
+        <div class="team-section">
+          <h4>Taktiken</h4>
+          <div id="tactic-list"><div class="empty-state">Taktiken werden geladen …</div></div>
+        </div>
+
+        <div id="members-section" class="team-section member-only">
+          <h4>Mitglieder</h4>
+          <div id="member-list"></div>
+        </div>
+
+        <div id="admin-settings" class="team-section admin-only">
+          <h4>Administration</h4>
+          <button id="migrate-legacy-btn" class="secondary-btn" type="button">Alte Spielzüge sicher übernehmen</button>
+          <form id="team-settings-form" class="team-form">
+            <label>Teamname<input id="settings-team-name" maxlength="80" required></label>
+            <label>Beschreibung<textarea id="settings-team-description" maxlength="500"></textarea></label>
+            <label class="checkbox-row"><input id="settings-team-private" type="checkbox"> Privates Team</label>
+            <button class="primary-btn" type="submit">Einstellungen speichern</button>
+          </form>
+          <form id="change-password-form" class="team-form">
+            <label>Neues Team-Passwort<input id="settings-team-password" type="password" minlength="8" maxlength="128" autocomplete="new-password"></label>
+            <button class="secondary-btn" type="submit">Passwort ändern</button>
+          </form>
+          <button id="delete-team-btn" class="danger-btn" type="button">Team löschen</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<dialog id="copy-tactic-dialog" class="copy-dialog">
+  <form method="dialog">
+    <h3>Taktik kopieren</h3>
+    <label>Zielteam<select id="copy-target-team"></select></label>
+    <div class="team-actions">
+      <button class="secondary-btn" value="cancel">Abbrechen</button>
+      <button id="confirm-copy-tactic" class="primary-btn" value="default">Kopieren</button>
+    </div>
+  </form>
+</dialog>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
-<script type="module">
-
-import { initializeApp } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import { 
-getFirestore,
-collection,
-addDoc,
-serverTimestamp,
-getDocs
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-window.firebaseGetDocs = getDocs;
-    
-const firebaseConfig = {
-  apiKey: "AIzaSyCctqi6kI2PkcsZrAVjH5Bhg5ISkTBJRuo",
-  authDomain: "rollhockey-taktikboard.firebaseapp.com",
-  projectId: "rollhockey-taktikboard",
-  storageBucket: "rollhockey-taktikboard.firebasestorage.app",
-  messagingSenderId: "262790321501",
-  appId: "1:262790321501:web:99dd56781fdc1dcfa344b4",
-  measurementId: "G-421YS7QL31"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-const db = getFirestore(app);
-
-
-window.firebaseDB = db;
-window.firebaseCollection = collection;
-window.firebaseAddDoc = addDoc;
-window.firebaseServerTimestamp = serverTimestamp;
-
-
-console.log("Firebase verbunden");
-</script>
-
 <script>
     
 const FIELD_IMG_SRC = "bilder_webp_Spielzüge_Rollhockey Spielfeld.png"
@@ -379,6 +530,7 @@ let dragOffX = 0, dragOffY = 0;
 let arrowStart = null;
 let selectedId = null;
 let animTimer = null;
+let boardReadOnly = false;
 
 const TEAM_COLORS = {
   A: { field: '#1e40af', gk: '#0ea5e9' },
@@ -414,6 +566,7 @@ function defaultState() {
 function cloneState(s) { return JSON.parse(JSON.stringify(s)); }
 
 function setTool(t) {
+  if (boardReadOnly) return;
   tool = t;
   arrowStart = null;
   ['select','run','pass','shoot','ball','delete'].forEach(id => {
@@ -549,6 +702,8 @@ function hitBall(state, mx, my) { return Math.hypot(state.ball.x-mx, state.ball.
 
   function startDrag(e) {
     e.preventDefault();
+
+    if (boardReadOnly) return;
 
     const pos = getMousePos(e);
     const state = frames[currentFrame];
@@ -710,7 +865,8 @@ function renderPlayerBtns() {
     div.innerHTML='';
     frames[currentFrame].players.filter(p=>p.team===t).forEach(p=>{
       const b=document.createElement('button');
-      b.className='tool-btn';
+      b.className='tool-btn editor-control';
+      b.disabled=boardReadOnly;
       const col=p.role==='gk'?TEAM_COLORS[t].gk:TEAM_COLORS[t].field;
       b.style.cssText=`background:${col};color:#fff;border-color:transparent;`;
       b.textContent=p.label+(p.role==='gk'?' (TW)':'');
@@ -721,6 +877,7 @@ function renderPlayerBtns() {
 }
 
 function addFrame() {
+  if (boardReadOnly) return;
   const newF=cloneState(frames[currentFrame]);
   newF.arrows=[];
   frames.splice(currentFrame+1,0,newF);
@@ -729,6 +886,7 @@ function addFrame() {
 }
 
 function delFrame() {
+  if (boardReadOnly) return;
   if(frames.length<=1)return;
   frames.splice(currentFrame,1);
   if(currentFrame>=frames.length)currentFrame=frames.length-1;
@@ -820,11 +978,15 @@ function exportPNG() {
 
 function lerpState(s1,s2,t) {
   const out=cloneState(s1);
-  out.players=s1.players.map((p,i)=>{
-    const p2=s2.players[i];
+  out.players=s1.players.map((p)=>{
+    const p2=s2.players.find(candidate=>candidate.id===p.id) || p;
     return{...p,x:p.x+(p2.x-p.x)*t,y:p.y+(p2.y-p.y)*t};
   });
-  out.ball={x:s1.ball.x+(s2.ball.x-s1.ball.x)*t,y:s1.ball.y+(s2.ball.y-s1.ball.y)*t};
+  out.ball={
+    x:s1.ball.x+(s2.ball.x-s1.ball.x)*t,
+    y:s1.ball.y+(s2.ball.y-s1.ball.y)*t,
+    visible:(t<0.5?s1.ball.visible:s2.ball.visible)!==false
+  };
   out.arrows=t<0.5?s1.arrows:s2.arrows;
   return out;
 }
@@ -951,7 +1113,8 @@ function normalizeFrames(frames){
 
             ball:{
                 x:frame.ball.x / W,
-                y:frame.ball.y / H
+                y:frame.ball.y / H,
+                visible:frame.ball.visible !== false
             },
 
             arrows:frame.arrows.map(a=>({
@@ -989,7 +1152,8 @@ function denormalizeFrames(frames){
 
             ball:{
                 x:frame.ball.x * W,
-                y:frame.ball.y * H
+                y:frame.ball.y * H,
+                visible:frame.ball.visible !== false
             },
 
             arrows:frame.arrows.map(a=>({
@@ -1009,101 +1173,28 @@ function denormalizeFrames(frames){
     });
 
 }
-async function saveSpielzug(){
-
-    const name = prompt("Name des Spielzugs:");
-
-    if(!name) return;
-
-
-    try {
-
-        await firebaseAddDoc(
-            firebaseCollection(firebaseDB, "spielzuege"),
-            {
-                name: name,
-                kategorie: "Angriff",
-                beschreibung: "",
-                preview: "",
-                frames: normalizeFrames(frames),
-                erstellt: firebaseServerTimestamp()
-            }
-        );
-
-
-        alert("Spielzug gespeichert: " + name);
-
-    } catch(error){
-
-        console.error(error);
-        alert("Fehler beim Speichern");
-
+function openTeamPanel(showDetails=false){
+    if(window.teamManager){
+        window.teamManager.open(showDetails);
     }
-
 }
-async function loadSpielzuege(){
 
-    const liste = document.getElementById("spielzug-liste");
-
-    liste.innerHTML="Lade...";
-
-    try{
-
-        const snap = await firebaseGetDocs(
-            firebaseCollection(firebaseDB,"spielzuege")
-        );
-
-
-        liste.innerHTML="";
-
-
-        snap.forEach(doc=>{
-
-            const data = doc.data();
-
-
-            const btn=document.createElement("button");
-
-            btn.className="tool-btn";
-
-            btn.innerHTML =
-            "📋 "+data.name;
-
-
-            btn.onclick=()=>{
-
-                frames = denormalizeFrames(data.frames);
-
-                currentFrame=0;
-
-                renderFrameList();
-                renderPlayerBtns();
-
-                draw(frames[0]);
-
-
-                alert(
-                    "Spielzug geladen: "
-                    + data.name
-                );
-
-            };
-
-
-            liste.appendChild(btn);
-
-
-        });
-
-
-    }catch(e){
-
-        console.error(e);
-
-        alert("Fehler beim Laden");
-
+function closeTeamPanel(){
+    if(window.teamManager){
+        window.teamManager.close();
     }
+}
 
+async function saveSpielzug(){
+    if(!window.teamManager){
+        alert("Die Teamverwaltung wird noch geladen.");
+        return;
+    }
+    await window.teamManager.saveTactic();
+}
+
+async function loadSpielzuege(){
+    openTeamPanel(true);
 }
 async function exportChallengeJSON(){
 
@@ -1185,10 +1276,12 @@ async function exportChallengeJSON(){
 lockLandscape();
 function addPlayer(team){
 
+    if(boardReadOnly) return;
+
     const state = frames[currentFrame];
 
     const count =
-        state.players.filter(p=>p.team===team).length+1;
+        state.players.filter(p=>p.team===team && p.role==="field").length+1;
 
 
     state.players.push({
@@ -1211,10 +1304,60 @@ function addPlayer(team){
     renderPlayerBtns();
     draw(state);
 }
+
+function setBoardReadOnly(value){
+    boardReadOnly=Boolean(value);
+    if(boardReadOnly){
+        tool="select";
+        arrowStart=null;
+        dragTarget=null;
+    }
+    document.querySelectorAll(".editor-control").forEach(el=>{
+        el.disabled=boardReadOnly;
+    });
+    ["select","run","pass","shoot","ball","delete"].forEach(id=>{
+        const el=document.getElementById(`btn-${id}`);
+        if(el) el.classList.toggle("active", !boardReadOnly && id===tool);
+    });
+    if(frames.length){
+        renderPlayerBtns();
+        draw(frames[currentFrame]);
+    }
+}
+
+window.taktikboard={
+    isReady(){
+        return Boolean(imgLoaded && W && H && frames.length);
+    },
+    getNormalizedFrames(){
+        if(!this.isReady()) throw new Error("Das Taktikboard ist noch nicht bereit.");
+        return normalizeFrames(frames);
+    },
+    loadNormalizedFrames(storedFrames){
+        if(!this.isReady()) throw new Error("Das Taktikboard ist noch nicht bereit.");
+        if(!Array.isArray(storedFrames) || storedFrames.length===0){
+            throw new Error("Die Taktik enthält keine gültigen Frames.");
+        }
+        frames=denormalizeFrames(cloneState(storedFrames));
+        currentFrame=0;
+        selectedId=null;
+        renderFrameList();
+        renderPlayerBtns();
+        draw(frames[0]);
+    },
+    reset(){
+        if(!this.isReady()) return;
+        frames=[defaultState()];
+        currentFrame=0;
+        selectedId=null;
+        renderFrameList();
+        renderPlayerBtns();
+        draw(frames[0]);
+    },
+    setReadOnly:setBoardReadOnly,
+    isReadOnly(){ return boardReadOnly; }
+};
 </script>
+<script type="module" src="./team-management.js"></script>
 </body>
-<footer>
-  <a href="\impressum">Impressum</a>
-  <a href="\datenschutz">Datenschutz</a>
-</footer>
 </html>

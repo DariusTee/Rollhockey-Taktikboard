@@ -1,0 +1,113 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function teamDocument(teamId) {
+      return get(/databases/$(database)/documents/teams/$(teamId));
+    }
+
+    function memberDocument(teamId, userId) {
+      return get(/databases/$(database)/documents/teams/$(teamId)/members/$(userId));
+    }
+
+    function isMember(teamId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid));
+    }
+
+    function isAdmin(teamId) {
+      return isMember(teamId)
+        && (
+          teamDocument(teamId).data.ownerId == request.auth.uid
+          || memberDocument(teamId, request.auth.uid).data.role == 'admin'
+        );
+    }
+
+    function canReadTeam(teamId) {
+      return signedIn()
+        && (teamDocument(teamId).data.isPrivate == false || isMember(teamId));
+    }
+
+    function validTacticCreate() {
+      return request.resource.data.keys().hasAll([
+          'name', 'frames', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt', 'schemaVersion'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name', 'frames', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt',
+          'schemaVersion', 'copiedFrom', 'legacySourceId'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.frames is list
+        && request.resource.data.frames.size() > 0
+        && request.resource.data.frames.size() <= 250
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.schemaVersion is int;
+    }
+
+    function validTacticUpdate() {
+      return request.resource.data.keys().hasOnly([
+          'name', 'frames', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt',
+          'schemaVersion', 'copiedFrom', 'legacySourceId'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.frames is list
+        && request.resource.data.frames.size() > 0
+        && request.resource.data.frames.size() <= 250
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.schemaVersion == resource.data.schemaVersion;
+    }
+
+    match /teams/{teamId} {
+      allow get: if signedIn() && (resource.data.isPrivate == false || isMember(teamId));
+      allow list: if signedIn() && resource.data.isPrivate == false;
+      allow create, update, delete: if false;
+
+      match /members/{userId} {
+        allow read: if isMember(teamId);
+        allow create, update, delete: if false;
+      }
+
+      match /taktiken/{tacticId} {
+        allow read: if canReadTeam(teamId);
+        allow create: if isAdmin(teamId) && validTacticCreate();
+        allow update: if isAdmin(teamId) && validTacticUpdate();
+        allow delete: if isAdmin(teamId);
+      }
+    }
+
+    match /users/{userId}/teams/{teamId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create, update, delete: if false;
+    }
+
+    // Legacy documents remain readable for a non-destructive, server-side migration.
+    match /spielzuege/{tacticId} {
+      allow read: if signedIn();
+      allow create, update, delete: if false;
+    }
+
+    // These collections are exclusively managed through Admin SDK Cloud Functions.
+    match /teamSecrets/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /teamCodes/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /joinRateLimits/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
